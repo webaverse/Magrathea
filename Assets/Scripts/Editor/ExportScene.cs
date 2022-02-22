@@ -11,6 +11,7 @@ using System.Diagnostics;
 using Magrathea.CustomNode;
 using System.Linq;
 using System;
+using UnityEngine.SceneManagement;
 
 namespace Magrathea
 {
@@ -42,8 +43,7 @@ namespace Magrathea
 
         public string ConversionPath => Path.Combine(PipelineSettings.ConversionFolder, PipelineSettings.GLTFName);
         
-        
-
+    
         public string ExportPath
         {
             get
@@ -77,9 +77,11 @@ namespace Magrathea
             {
 
                 case State.INITIAL:
-                    PipelineSettings.GLTFName = "Export";
+                    Scene scene = SceneManager.GetActiveScene();
 
-                    PipelineSettings.ProjectFolder = "./Outputs";
+                    PipelineSettings.GLTFName = scene.name;
+
+                    PipelineSettings.ProjectFolder = "/../Outputs";
                     GUILayout.Space(8);
                     GUILayout.Label("Export Components:");
                     PipelineSettings.ExportColliders = EditorGUILayout.Toggle("Colliders", PipelineSettings.ExportColliders);
@@ -857,15 +859,42 @@ namespace Magrathea
             CleanupLights();
 
             //now execute the GLTF conversion script in the Pipeline folder
-
-            var cmd = new ProcessStartInfo();
-
 	        UnityEngine.Debug.Log("System info is " + SystemInfo.operatingSystem.ToLower());
             UnityEngine.Debug.Log("ExportPath " + ExportPath);
             var converter = new GLTFToGLBConverter();
             converter.ConvertToGLB(PipelineSettings.ConversionFolder + PipelineSettings.GLTFName);
+            var GLBName = PipelineSettings.ConversionFolder + PipelineSettings.GLTFName + ".glb";
+           
+            SendToWebaverse(GLBName);
+
+            File.Delete(Path.Combine(PipelineSettings.ConversionFolder, PipelineSettings.GLTFName + ".glb"));
+            File.Delete(Path.Combine(PipelineSettings.ConversionFolder, PipelineSettings.GLTFName + ".gltf"));
+            File.Delete(Path.Combine(PipelineSettings.ConversionFolder, PipelineSettings.GLTFName + ".bin"));
+
             state = State.INITIAL;
         }
-    }
 
+        private void SendToWebaverse(string GLBName)
+        {
+           // if project folder directory doesn't exist, create it
+            DirectoryInfo projectDir = new DirectoryInfo(PipelineSettings.ConversionFolder);
+            if(!projectDir.Exists)
+                Directory.CreateDirectory(PipelineSettings.ConversionFolder);
+
+            // if project folder directory doesn't exist, create it
+            projectDir = new DirectoryInfo(PipelineSettings.ConversionFolder + "/Webaverse");
+            if(!projectDir.Exists)
+                Directory.CreateDirectory(PipelineSettings.ConversionFolder + "/Webaverse");
+
+            projectDir = new DirectoryInfo(PipelineSettings.ConversionFolder + "/Webaverse/" + PipelineSettings.GLTFName);
+            if(!projectDir.Exists)
+                Directory.CreateDirectory(PipelineSettings.ConversionFolder + "/Webaverse/" + PipelineSettings.GLTFName);
+           
+            // copy the glb to the project folder
+            File.Copy(GLBName, Path.Combine(PipelineSettings.ConversionFolder + "/./Webaverse", PipelineSettings.GLTFName, PipelineSettings.GLTFName + ".glb"), true);
+            String metaverseFile = "{\"name\": \"" + PipelineSettings.GLTFName + "\", \"start_url\": \"" + PipelineSettings.GLTFName + ".glb\" }";
+            // write the metaverse file to the project folder
+            File.WriteAllText(Path.Combine(PipelineSettings.ConversionFolder + "./Webaverse", PipelineSettings.GLTFName, ".metaverseFile"), metaverseFile);
+        }
+    }
 }

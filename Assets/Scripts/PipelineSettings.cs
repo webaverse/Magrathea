@@ -75,7 +75,7 @@ namespace Magrathea
             }
         }
 
-        public static readonly string ConversionFolder = Application.dataPath + "/Outputs/";
+        public static readonly string ConversionFolder = Application.dataPath + "/../Outputs/";
         public static readonly string configFile = Application.dataPath + "/settings.conf";
         public static readonly string PipelineAssetsFolder = Application.dataPath + "/Magrathea/PipelineAssets/";
         public static readonly string PipelinePersistentFolder = Application.dataPath + "/Magrathea/PersistentAssets/";
