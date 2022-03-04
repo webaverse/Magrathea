@@ -116,7 +116,7 @@ public  class  GLTFToGLBConverter
     private  void  ProcessBufferViews ()
     {
         JArray bufferViews = (JArray)gltf["bufferViews"];
-
+        if(bufferViews != null && bufferViews.HasValues)
         foreach (var bufferView in bufferViews)
         {
             if (((JObject)bufferView).Property("byteOffset") == null)

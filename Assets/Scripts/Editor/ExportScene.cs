@@ -12,6 +12,7 @@ using Magrathea.CustomNode;
 using System.Linq;
 using System;
 using UnityEngine.SceneManagement;
+using Newtonsoft.Json;
 
 namespace Magrathea
 {
@@ -42,8 +43,8 @@ namespace Magrathea
         Exporter exporter;
 
         public string ConversionPath => Path.Combine(PipelineSettings.ConversionFolder, PipelineSettings.GLTFName);
-        
-    
+
+
         public string ExportPath
         {
             get
@@ -53,10 +54,10 @@ namespace Magrathea
                 return exportFolder;
             }
         }
-        
+
         private void OnFocus()
         {
-            if(exporter == null)
+            if (exporter == null)
             {
                 exporter = new Exporter();
             }
@@ -110,7 +111,7 @@ namespace Magrathea
                     //     CombineMeshes(true);
                     // }
                     // GUILayout.Space(8);
-                    if(GUILayout.Button("Format LODGroups"))
+                    if (GUILayout.Button("Format LODGroups"))
                     {
                         LODFormatter.FormatLODs();
                     }
@@ -126,7 +127,7 @@ namespace Magrathea
                     //     CleanupMeshCombine();
                     // }
                     GUILayout.Space(16);
-                    
+
                     if (PipelineSettings.ProjectFolder != null)
                     {
                         doDebug = EditorGUILayout.Toggle("Debug Execution", doDebug);
@@ -144,7 +145,7 @@ namespace Magrathea
 
                 #region Debugging Stepper
                 case State.PRE_EXPORT:
-                    if(GUILayout.Button("Continue"))
+                    if (GUILayout.Button("Continue"))
                     {
                         state++;
                     }
@@ -170,12 +171,12 @@ namespace Magrathea
         private Material BackupMaterial(Material material, Renderer _renderer, bool savePersistent)
         {
             if (matRegistry == null) matRegistry = new Dictionary<string, Material>();
-            
+
             string registryKey = string.Format("{0}_{1}", material.name, _renderer ? _renderer.lightmapIndex : -2);
-            
-            if (matRegistry.ContainsKey(registryKey)) 
+
+            if (matRegistry.ContainsKey(registryKey))
                 return matRegistry[registryKey];
-            
+
             string origPath = AssetDatabase.GetAssetPath(material);
             if (origPath == null || Regex.IsMatch(origPath, @".*\.glb"))
             {
@@ -185,13 +186,13 @@ namespace Magrathea
                 string dupePath = dupeRoot + material.name + "_" + DateTime.Now.Ticks + ".mat";
                 string dupeDir = Regex.Match(dupePath, @"(.*[\\\/])[\w\.\d\-]+").Value;
                 dupePath = dupePath.Replace(Application.dataPath, "Assets");
-                if(!Directory.Exists(dupeDir))
+                if (!Directory.Exists(dupeDir))
                 {
                     Directory.CreateDirectory(dupeDir);
                 }
                 AssetDatabase.CreateAsset(dupe, dupePath);
 
-                if(matLinks == null)
+                if (matLinks == null)
                 {
                     matLinks = new Dictionary<Material, Material>();
                 }
@@ -227,7 +228,7 @@ namespace Magrathea
             */
             var maps = mat.GetTexturePropertyNames();
             var matTexes = new List<Texture>();
-            for(int i = 0; i < maps.Length; i++)
+            for (int i = 0; i < maps.Length; i++)
             {
                 matTexes.Add(mat.GetTexture(maps[i]));
             }
@@ -242,7 +243,7 @@ namespace Magrathea
                 .Select((x) => new Tuple<string, Texture2D>(x.Item1, (Texture2D)x.Item2))
                 .ToArray();
             var texPaths = new List<Tuple<Material, string, string>>();
-            foreach(var texture in textures)
+            foreach (var texture in textures)
             {
                 var tex = texture.Item2;
                 string texPath = AssetDatabase.GetAssetPath(tex);
@@ -271,7 +272,7 @@ namespace Magrathea
             string localPath = nuPath.Replace(Application.dataPath, "Assets");
             File.WriteAllBytes(nuPath, nuTex.EncodeToPNG());
             //AssetDatabase.ImportAsset(localPath);
-            
+
             UnityEngine.Debug.Log("Generated texture " + nuTex + " from " + tex);
             if (texLinks == null)
                 texLinks = new Dictionary<Texture2D, Texture2D>();
@@ -287,7 +288,7 @@ namespace Magrathea
         {
             lodRegistry = new Dictionary<Transform, string>();
             LODGroup[] lodGroups = GameObject.FindObjectsOfType<LODGroup>();
-            foreach(var lodGroup in lodGroups)
+            foreach (var lodGroup in lodGroups)
             {
                 Transform tr = lodGroup.transform;
                 lodRegistry.Add(tr, tr.name);
@@ -297,9 +298,9 @@ namespace Magrathea
 
         private void CleanupExportingLODs()
         {
-            if(lodRegistry != null)
+            if (lodRegistry != null)
             {
-                foreach(var kv in lodRegistry)
+                foreach (var kv in lodRegistry)
                 {
                     kv.Key.name = kv.Value;
                 }
@@ -322,7 +323,7 @@ namespace Magrathea
 
         public void CleanupLights()
         {
-            foreach(var light in bakeLights)
+            foreach (var light in bakeLights)
             {
                 light.gameObject.SetActive(true);
             }
@@ -347,7 +348,7 @@ namespace Magrathea
                     "negz"
                     };
                 string nuPath = Path.Combine(PipelineSettings.ProjectFolder, "cubemap");
-                if(!Directory.Exists(nuPath))
+                if (!Directory.Exists(nuPath))
                 {
                     Directory.CreateDirectory(nuPath);
                 }
@@ -370,7 +371,7 @@ namespace Magrathea
                         return x;
                     }).ToArray();
                 }
-                else if(skyMat.shader.name.Contains("Skybox/Panoramic"))
+                else if (skyMat.shader.name.Contains("Skybox/Panoramic"))
                 {
                     var hdri = skyMat.GetTexture("_MainTex") as Texture2D;
                     outMode = SkyBox.Mode.EQUIRECTANGULAR;
@@ -382,7 +383,7 @@ namespace Magrathea
                     var cubemap = skyMat.GetTexture("_Tex") as Cubemap;
                     string srcPath = AssetDatabase.GetAssetPath(cubemap);
                     string srcName = Regex.Match(srcPath, @"(?<=.*/)\w*(?=\.hdr)").Value;
-                    
+
                     var cubemapDir = new DirectoryInfo(nuPath);
                     if (!cubemapDir.Exists)
                     {
@@ -390,7 +391,7 @@ namespace Magrathea
                     }
 
                     CubemapFace[] faces = Enumerable.Range(0, 6).Select((i) => (CubemapFace)i).ToArray();
-                    
+
                     Texture2D[] faceTexes = faces.Select((x, i) =>
                     {
                         Texture2D result = new Texture2D(cubemap.width, cubemap.height);// cubemap.format, false);
@@ -404,17 +405,17 @@ namespace Magrathea
                         return result;
                     }).ToArray();
                 }
-                
+
 
                 GameObject skyboxGO = new GameObject("__skybox__");
                 skyboxGO.AddComponent<SkyBox>().mode = outMode;
             }
         }
-            
+
         private void CleanupExportingSkybox()
         {
             var skyboxes = FindObjectsOfType<SkyBox>();
-            for(int i = 0; i < skyboxes.Length; i++)
+            for (int i = 0; i < skyboxes.Length; i++)
             {
                 DestroyImmediate(skyboxes[i].gameObject);
             }
@@ -508,7 +509,7 @@ namespace Magrathea
                 }
                 return rGroup2;
             });
-            foreach(var update in updates)
+            foreach (var update in updates)
             {
                 update.Key.sharedMaterials = update.Value;
             }
@@ -517,13 +518,13 @@ namespace Magrathea
         private void DeserializeMaterials()
         {
             var renderers = FindObjectsOfType<Renderer>();
-            foreach(var renderer in renderers)
+            foreach (var renderer in renderers)
             {
                 renderer.sharedMaterials = renderer.sharedMaterials.Select
                 (
                     (mat) =>
                     {
-                        if(matLinks.ContainsKey(mat))
+                        if (matLinks.ContainsKey(mat))
                         {
                             mat = matLinks[mat];
                         }
@@ -539,11 +540,11 @@ namespace Magrathea
 
         private void CreateBakedMeshes(bool savePersistent)
         {
-            if(PipelineSettings.meshMode == MeshExportMode.DEFAULT ||
+            if (PipelineSettings.meshMode == MeshExportMode.DEFAULT ||
                PipelineSettings.meshMode == MeshExportMode.COMBINE)
             {
                 CreateUVBakedMeshes(savePersistent);
-                if(PipelineSettings.meshMode == MeshExportMode.COMBINE)
+                if (PipelineSettings.meshMode == MeshExportMode.COMBINE)
                 {
                     CombineMeshes();
                 }
@@ -555,7 +556,7 @@ namespace Magrathea
         {
             glLinks = new Dictionary<Mesh, Mesh>();
             var renderers = FindObjectsOfType<Renderer>();
-            foreach(var renderer in renderers)
+            foreach (var renderer in renderers)
             {
                 bool isSkinned = renderer.GetType() == typeof(SkinnedMeshRenderer);
                 Mesh mesh = null;
@@ -579,7 +580,7 @@ namespace Magrathea
 
                     string assetFolder = savePersistent ? PipelineSettings.PipelinePersistentFolder : PipelineSettings.PipelineAssetsFolder;
 
-                    if(!Directory.Exists(assetFolder))
+                    if (!Directory.Exists(assetFolder))
                     {
                         Directory.CreateDirectory(assetFolder);
                     }
@@ -587,7 +588,7 @@ namespace Magrathea
                     UnityEngine.Mesh nuMesh = UnityEngine.Object.Instantiate(mesh);
 
                     AssetDatabase.CreateAsset(nuMesh, nuMeshPath);
-                    
+
                     if (hasLightmap)
                     {
                         var off = renderer.lightmapScaleOffset;
@@ -611,7 +612,7 @@ namespace Magrathea
         MeshBakeResult[] bakeResults;
         private void CombineMeshes(bool savePersistent = false)
         {
-            #if UNITY_EDITOR && USE_MESH_BAKER
+#if UNITY_EDITOR && USE_MESH_BAKER
 
             var stagers = FindObjectsOfType<MeshBake>();
             bakeResults = stagers.Select((baker) => baker.Bake(savePersistent)).Where((x) => x != null).ToArray();
@@ -623,27 +624,27 @@ namespace Magrathea
                 }
             }
             AssetDatabase.Refresh();
-            #endif
+#endif
         }
 
         private void CleanupMeshCombine()
         {
-            if(bakeResults != null)
+            if (bakeResults != null)
             {
                 foreach (var result in bakeResults)
                 {
-                    foreach(var original in result.originals)
+                    foreach (var original in result.originals)
                     {
-                        if(original && original.GetComponent<MeshRenderer>())
+                        if (original && original.GetComponent<MeshRenderer>())
                             original.GetComponent<MeshRenderer>().enabled = true;
                     }
-                    foreach(var combined in result.combined)
+                    foreach (var combined in result.combined)
                     {
-                        if(combined != null)
+                        if (combined != null)
                             DestroyImmediate(combined.gameObject);
                     }
                 }
-                
+
             }
             //MeshStager.ResetAll();
         }
@@ -655,8 +656,8 @@ namespace Magrathea
                 MeshFilter[] filts = GameObject.FindObjectsOfType<MeshFilter>();
                 foreach (var filt in filts)
                 {
-                    if (filt && 
-                        filt.sharedMesh != null && 
+                    if (filt &&
+                        filt.sharedMesh != null &&
                         glLinks.ContainsKey(filt.sharedMesh))
                     {
                         filt.sharedMesh = glLinks[filt.sharedMesh];
@@ -678,7 +679,7 @@ namespace Magrathea
             //Dictionary<Collider, Transform> parents = new Dictionary<Collider, Transform>();
             Material defaultMat = AssetDatabase.LoadMainAssetAtPath(defaultMatPath) as Material;
             Collider[] colliders = GameObject.FindObjectsOfType<Collider>().Where((col) => col.gameObject.activeInHierarchy).ToArray();
-            foreach(var collider in colliders)
+            foreach (var collider in colliders)
             {
                 Transform xform = collider.transform;
                 Vector3 position = xform.position;
@@ -717,15 +718,15 @@ namespace Magrathea
                     rend.enabled = true;
                     rend.lightmapIndex = -1;
                 }
-                
-                
-                
-                
+
+
+
+
             }
         }
         private void CleanUpExportingColliders()
         {
-            if(cRoot)
+            if (cRoot)
             {
                 DestroyImmediate(cRoot);
             }
@@ -739,29 +740,29 @@ namespace Magrathea
         }
         private IEnumerator ExportSequence(bool savePersistent)
         {
-            
+
             DirectoryInfo directory = new DirectoryInfo(PipelineSettings.ConversionFolder);
-            if(!directory.Exists)
+            if (!directory.Exists)
             {
                 Directory.CreateDirectory(PipelineSettings.ConversionFolder);
             }
             string exportFolder = Path.Combine(PipelineSettings.ProjectFolder, "assets");
             DirectoryInfo outDir = new DirectoryInfo(exportFolder);
-            if(!outDir.Exists)
+            if (!outDir.Exists)
             {
                 Directory.CreateDirectory(exportFolder);
             }
-                
+
             var files = directory.GetFiles();
             var subDirectories = directory.GetDirectories();
 
             //delete files in pipeline folder to make way for new export
-            foreach(var file in files)
+            foreach (var file in files)
             {
                 file.Delete();
             }
 
-            foreach(var subDir in subDirectories)
+            foreach (var subDir in subDirectories)
             {
                 subDir.Delete(true);
             }
@@ -782,55 +783,71 @@ namespace Magrathea
 
             FormatForExportingLODs();
 
-            if(PipelineSettings.ExportColliders)
+            if (PipelineSettings.ExportColliders)
             {
                 FormatForExportingColliders();
             }
 
-            
-            
+
+
             SerializeMaterials();
 
             CreateBakedMeshes(savePersistent);
-            
+
             if (PipelineSettings.ExportSkybox)
             {
                 FormatForExportingSkybox();
             }
 
-            if(PipelineSettings.ExportEnvmap)
+            if (PipelineSettings.ExportEnvmap)
             {
                 FormatForExportingEnvmap();
             }
 
-            
-            
+
+
             //convert materials to SeinPBR
             StandardToSeinPBR.AllToSeinPBR();
-            if(doDebug)
+            if (doDebug)
             {
                 while (state != State.EXPORTING) yield return null;
             }
-            
+
             try
             {
                 exporter.Export();
-            } catch (System.NullReferenceException e)
+            }
+            catch (System.NullReferenceException e)
             {
                 UnityEngine.Debug.LogError("export error:" + e);
             }
 
             state = State.POST_EXPORT;
 
-            if(doDebug)
+            if (doDebug)
             {
                 while (state != State.RESTORING) yield return null;
             }
-           
+
+
+            //now execute the GLTF conversion script in the Pipeline folder
+            UnityEngine.Debug.Log("System info is " + SystemInfo.operatingSystem.ToLower());
+            UnityEngine.Debug.Log("ExportPath " + ExportPath);
+            var converter = new GLTFToGLBConverter();
+            converter.ConvertToGLB(PipelineSettings.ConversionFolder + PipelineSettings.GLTFName);
+            var GLBName = PipelineSettings.ConversionFolder + PipelineSettings.GLTFName + ".glb";
+
+            SendToWebaverse(GLBName);
+            CreateMetaverseFile(GLBName);
+            CreateSceneFile(GLBName);
+            // File.Delete(Path.Combine(PipelineSettings.ConversionFolder, PipelineSettings.GLTFName + ".glb"));
+            // File.Delete(Path.Combine(PipelineSettings.ConversionFolder, PipelineSettings.GLTFName + ".gltf"));
+            // File.Delete(Path.Combine(PipelineSettings.ConversionFolder, PipelineSettings.GLTFName + ".bin"));
+
 
             if (PipelineSettings.ExportColliders)
             {
-               CleanUpExportingColliders();
+                CleanUpExportingColliders();
             }
 
 
@@ -843,58 +860,119 @@ namespace Magrathea
             RestoreGLLinks();
             DeserializeMaterials();
 
-
             CleanupExportingLODs();
 
-            if(PipelineSettings.ExportSkybox)
+            if (PipelineSettings.ExportSkybox)
             {
                 CleanupExportingSkybox();
             }
 
-            if(PipelineSettings.ExportEnvmap)
+            if (PipelineSettings.ExportEnvmap)
             {
                 CleanupExportEnvmap();
             }
 
             CleanupLights();
 
-            //now execute the GLTF conversion script in the Pipeline folder
-	        UnityEngine.Debug.Log("System info is " + SystemInfo.operatingSystem.ToLower());
-            UnityEngine.Debug.Log("ExportPath " + ExportPath);
-            var converter = new GLTFToGLBConverter();
-            converter.ConvertToGLB(PipelineSettings.ConversionFolder + PipelineSettings.GLTFName);
-            var GLBName = PipelineSettings.ConversionFolder + PipelineSettings.GLTFName + ".glb";
-           
-            SendToWebaverse(GLBName);
-
-            File.Delete(Path.Combine(PipelineSettings.ConversionFolder, PipelineSettings.GLTFName + ".glb"));
-            File.Delete(Path.Combine(PipelineSettings.ConversionFolder, PipelineSettings.GLTFName + ".gltf"));
-            File.Delete(Path.Combine(PipelineSettings.ConversionFolder, PipelineSettings.GLTFName + ".bin"));
 
             state = State.INITIAL;
         }
 
         private void SendToWebaverse(string GLBName)
         {
-           // if project folder directory doesn't exist, create it
+            // if project folder directory doesn't exist, create it
             DirectoryInfo projectDir = new DirectoryInfo(PipelineSettings.ConversionFolder);
-            if(!projectDir.Exists)
+            if (!projectDir.Exists)
                 Directory.CreateDirectory(PipelineSettings.ConversionFolder);
 
             // if project folder directory doesn't exist, create it
             projectDir = new DirectoryInfo(PipelineSettings.ConversionFolder + "/Webaverse");
-            if(!projectDir.Exists)
+            if (!projectDir.Exists)
                 Directory.CreateDirectory(PipelineSettings.ConversionFolder + "/Webaverse");
 
             projectDir = new DirectoryInfo(PipelineSettings.ConversionFolder + "/Webaverse/" + PipelineSettings.GLTFName);
-            if(!projectDir.Exists)
+            if (!projectDir.Exists)
                 Directory.CreateDirectory(PipelineSettings.ConversionFolder + "/Webaverse/" + PipelineSettings.GLTFName);
-           
+
             // copy the glb to the project folder
             File.Copy(GLBName, Path.Combine(PipelineSettings.ConversionFolder + "/./Webaverse", PipelineSettings.GLTFName, PipelineSettings.GLTFName + ".glb"), true);
+        }
+
+        private void CreateMetaverseFile(string GLBName)
+        {
             String metaverseFile = "{\"name\": \"" + PipelineSettings.GLTFName + "\", \"start_url\": \"" + PipelineSettings.GLTFName + ".glb\" }";
             // write the metaverse file to the project folder
-            File.WriteAllText(Path.Combine(PipelineSettings.ConversionFolder + "./Webaverse", PipelineSettings.GLTFName, ".metaverseFile"), metaverseFile);
+            File.WriteAllText(Path.Combine(PipelineSettings.ConversionFolder + "/./Webaverse", PipelineSettings.GLTFName, ".metaverseFile"), metaverseFile);
+        }
+
+        private void CreateSceneFile(string GLBName)
+        {
+            SceneFile scene = new SceneFile();
+
+            foreach (var light in bakeLights)
+            {
+                UnityEngine.Debug.Log("Handling light loop...");
+                UnityEngine.Debug.Log(light.ToString());
+                SceneObject lightObject = new SceneObject();
+                lightObject.type = "application/light";
+                // lightObject.args = [];
+                // lightObject.shadow = [];
+
+                Transform t = light.GetComponent<Transform>();
+
+                lightObject.position = new float[3] { t.position.x, t.position.y, t.position.z };
+                lightObject.quaternion = new float[4] { t.rotation.x, t.rotation.y, t.rotation.z, t.rotation.w };
+                lightObject.scale = new float[3] { t.localScale.x, t.localScale.y, t.localScale.z };
+
+                UnityEngine.Debug.Log(lightObject.ToString());
+
+
+                scene.objects.Add(lightObject);
+            }
+
+            var sceneObject = new SceneObject();
+            sceneObject.position = new float[3]{0,0,0};
+            sceneObject.start_url = "https://webaverse.github.io/atmospheric-sky/";
+            scene.objects.Add(sceneObject);
+
+            var setting = new JsonSerializerSettings();
+            setting.Formatting = Formatting.Indented;
+            setting.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+            setting.NullValueHandling = NullValueHandling.Ignore;
+
+            var json = JsonConvert.SerializeObject(scene, setting);
+            var path = Path.Combine(PipelineSettings.ConversionFolder + "/./Webaverse", PipelineSettings.GLTFName, PipelineSettings.GLTFName + ".scn");
+
+            File.WriteAllText(path, json);
+
+            // JsonConvert.Serialize
         }
     }
+}
+
+public class SceneFile
+{
+    public List<SceneObject> objects = new List<SceneObject>();
+}
+
+public class SceneObject
+{
+    public string type;
+    public string start_url;
+    public float[] position;
+    public float[] quaternion;
+    public float[] scale;
+    public bool dynamic;
+    public bool physics;
+    public SceneObjectContent content;
+}
+
+public class SceneObjectContent
+{
+    public string lightType;
+    public string args;
+    public float[] position;
+    public float[] quaternion;
+    public float[] scale;
+    public float[] shadow;
 }
