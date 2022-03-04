@@ -311,6 +311,7 @@ namespace Magrathea
 
         #region LIGHTS
         Light[] bakeLights;
+
         public void StageLights()
         {
             bakeLights = FindObjectsOfType<Light>().Where((light) => light.gameObject.activeInHierarchy && light.lightmapBakeType == LightmapBakeType.Baked).ToArray();
@@ -329,6 +330,27 @@ namespace Magrathea
             }
             bakeLights = null;
         }
+
+        Light[] realtimeLights;
+        public void StageRealtimeLights()
+        {
+            realtimeLights = FindObjectsOfType<Light>().Where((light) => light.gameObject.activeInHierarchy && light.lightmapBakeType == LightmapBakeType.Realtime).ToArray();
+
+            foreach (var light in realtimeLights)
+            {
+                light.gameObject.SetActive(false);
+            }
+        }
+
+        public void CleanupRealtimeLights()
+        {
+            foreach (var light in realtimeLights)
+            {
+                light.gameObject.SetActive(true);
+            }
+            realtimeLights = null;
+        }
+
         #endregion
 
         #region SKYBOX
@@ -780,6 +802,7 @@ namespace Magrathea
             //      customnode classes
 
             StageLights();
+            StageRealtimeLights();
 
             FormatForExportingLODs();
 
@@ -787,8 +810,6 @@ namespace Magrathea
             {
                 FormatForExportingColliders();
             }
-
-
 
             SerializeMaterials();
 
@@ -803,8 +824,6 @@ namespace Magrathea
             {
                 FormatForExportingEnvmap();
             }
-
-
 
             //convert materials to SeinPBR
             StandardToSeinPBR.AllToSeinPBR();
@@ -838,7 +857,7 @@ namespace Magrathea
             var GLBName = PipelineSettings.ConversionFolder + PipelineSettings.GLTFName + ".glb";
 
             SendToWebaverse(GLBName);
-            CreateMetaverseFile(GLBName);
+            CreateMetaverseFile();
             CreateSceneFile(GLBName);
             // File.Delete(Path.Combine(PipelineSettings.ConversionFolder, PipelineSettings.GLTFName + ".glb"));
             // File.Delete(Path.Combine(PipelineSettings.ConversionFolder, PipelineSettings.GLTFName + ".gltf"));
@@ -873,7 +892,7 @@ namespace Magrathea
             }
 
             CleanupLights();
-
+            CleanupRealtimeLights();
 
             state = State.INITIAL;
         }
@@ -898,7 +917,7 @@ namespace Magrathea
             File.Copy(GLBName, Path.Combine(PipelineSettings.ConversionFolder + "/./Webaverse", PipelineSettings.GLTFName, PipelineSettings.GLTFName + ".glb"), true);
         }
 
-        private void CreateMetaverseFile(string GLBName)
+        private void CreateMetaverseFile()
         {
             String metaverseFile = "{\"name\": \"" + PipelineSettings.GLTFName + "\", \"start_url\": \"" + PipelineSettings.GLTFName + ".glb\" }";
             // write the metaverse file to the project folder
@@ -909,31 +928,44 @@ namespace Magrathea
         {
             SceneFile scene = new SceneFile();
 
-            foreach (var light in bakeLights)
+            var atmosphereObject = new SceneObject();
+            atmosphereObject.position = new float[3] { 0, 0, 0 };
+            atmosphereObject.start_url = "https://webaverse.github.io/atmospheric-sky/";
+            scene.objects.Add(atmosphereObject);
+
+            var sceneObject = new SceneObject();
+            sceneObject.position = new float[3] { 0, 0, 0 };
+            sceneObject.start_url = PipelineSettings.GLTFName + ".glb";
+            scene.objects.Add(sceneObject);
+
+            foreach (var light in realtimeLights)
             {
                 UnityEngine.Debug.Log("Handling light loop...");
                 UnityEngine.Debug.Log(light.ToString());
                 SceneObject lightObject = new SceneObject();
                 lightObject.type = "application/light";
-                // lightObject.args = [];
-                // lightObject.shadow = [];
+
+                SceneObjectContent content = new SceneObjectContent();
+                lightObject.content = content;
+
+                content.lightType = light.type.ToString();
+
+                // Set color
+                content.args = "[[" + MathF.Floor(light.color.r * 255) + ", " +
+                MathF.Floor(light.color.g * 255) + ", " +
+                MathF.Floor(light.color.b * 255) + "], " +
+                MathF.Floor(light.intensity * 255) + "]";
+
+                content.shadow = "[150, 5120, 0.1, 10000, -0.0001]";
 
                 Transform t = light.GetComponent<Transform>();
 
-                lightObject.position = new float[3] { t.position.x, t.position.y, t.position.z };
-                lightObject.quaternion = new float[4] { t.rotation.x, t.rotation.y, t.rotation.z, t.rotation.w };
-                lightObject.scale = new float[3] { t.localScale.x, t.localScale.y, t.localScale.z };
-
-                UnityEngine.Debug.Log(lightObject.ToString());
-
+                content.position = new float[3] { t.position.x, t.position.y, t.position.z };
+                content.quaternion = new float[4] { t.rotation.x, t.rotation.y, t.rotation.z, t.rotation.w };
+                content.scale = new float[3] { t.localScale.x, t.localScale.y, t.localScale.z };
 
                 scene.objects.Add(lightObject);
             }
-
-            var sceneObject = new SceneObject();
-            sceneObject.position = new float[3]{0,0,0};
-            sceneObject.start_url = "https://webaverse.github.io/atmospheric-sky/";
-            scene.objects.Add(sceneObject);
 
             var setting = new JsonSerializerSettings();
             setting.Formatting = Formatting.Indented;
@@ -944,8 +976,6 @@ namespace Magrathea
             var path = Path.Combine(PipelineSettings.ConversionFolder + "/./Webaverse", PipelineSettings.GLTFName, PipelineSettings.GLTFName + ".scn");
 
             File.WriteAllText(path, json);
-
-            // JsonConvert.Serialize
         }
     }
 }
@@ -962,8 +992,9 @@ public class SceneObject
     public float[] position;
     public float[] quaternion;
     public float[] scale;
-    public bool dynamic;
-    public bool physics;
+    bool? _dynamic;
+    bool? _physics;
+
     public SceneObjectContent content;
 }
 
@@ -971,8 +1002,8 @@ public class SceneObjectContent
 {
     public string lightType;
     public string args;
+    public string shadow;
     public float[] position;
     public float[] quaternion;
     public float[] scale;
-    public float[] shadow;
 }
