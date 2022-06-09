@@ -1227,7 +1227,7 @@ namespace Magrathea
             {
                 CleanupMeshCombine();
             }
-            
+
             RestoreAllGLLinks();
             DeserializeAllMaterials();
             CleanupExportingLODs();
@@ -1280,14 +1280,14 @@ namespace Magrathea
                 Directory.CreateDirectory(PipelineSettings.ConversionFolder + "/Webaverse/" + PipelineSettings.GLTFName);
 
             // copy the glb to the project folder
-            File.Copy(GLBName, Path.Combine(PipelineSettings.ConversionFolder + "/./Webaverse", PipelineSettings.GLTFName, PipelineSettings.GLTFName + ".glb"), true);
+            File.Copy(GLBName, Path.Combine(PipelineSettings.ConversionFolder + "/Webaverse", PipelineSettings.GLTFName, PipelineSettings.GLTFName + ".glb"), true);
         }
 
         private void CreateMetaverseFile()
         {
             String metaverseFile = "{\"name\": \"" + PipelineSettings.GLTFName + "\", \"start_url\": \"" + PipelineSettings.GLTFName + ".glb\" }";
             // write the metaverse file to the project folder
-            File.WriteAllText(Path.Combine(PipelineSettings.ConversionFolder + "/./Webaverse", PipelineSettings.GLTFName, ".metaverseFile"), metaverseFile);
+            File.WriteAllText(Path.Combine(PipelineSettings.ConversionFolder + "/Webaverse", PipelineSettings.GLTFName, ".metaverseFile"), metaverseFile);
         }
 
         private void CreateSceneFile(string GLBName)
@@ -1344,7 +1344,6 @@ namespace Magrathea
             File.WriteAllText(path, json);
         }
     }
-
 }
 
 public class SceneFile

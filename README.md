@@ -1,18 +1,15 @@
-# Unity-to-Magrathea Exporter
+# Magrathea
 
 Export pipeline for Unity3D to the Metaverse
 
 Uses open source code from the following projects
 - [SeinJS](https://github.com/hiloteam)
 - [Webaverse](https://github.com/webaverse)
-- [Engine]
+- [Atlas Engine](https://github.com/atlasfoundation/atlasengine)
+- [XREngine](https://github.com/xrfoundation/xrengine)
 
-
-# Usage
-
-## System Requirements
+# System Requirements
 Unity >2020
-
 Bakery Lightmapper (optional)
 Meshbaker (optional)
 
