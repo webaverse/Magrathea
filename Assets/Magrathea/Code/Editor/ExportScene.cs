@@ -1,4 +1,4 @@
-using System.Collections;
+verseusing System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
@@ -1285,9 +1285,9 @@ namespace Magrathea
 
         private void CreateMetaverseFile()
         {
-            String metaverseFile = "{\"name\": \"" + PipelineSettings.GLTFName + "\", \"start_url\": \"" + PipelineSettings.GLTFName + ".glb\" }";
+            String metaverseFile = "{\"name\": \"" + PipelineSettings.GLTFName + "\", \"start_url\": \"" + PipelineSettings.GLTFName + ".scn\" }";
             // write the metaverse file to the project folder
-            File.WriteAllText(Path.Combine(PipelineSettings.ConversionFolder + "/Webaverse", PipelineSettings.GLTFName, ".metaverseFile"), metaverseFile);
+            File.WriteAllText(Path.Combine(PipelineSettings.ConversionFolder + "/Webaverse", PipelineSettings.GLTFName, ".metaversefile"), metaversefile);
         }
 
         private void CreateSceneFile(string GLBName)
@@ -1301,7 +1301,7 @@ namespace Magrathea
 
             var sceneObject = new SceneObject();
             sceneObject.position = new float[3] { 0, 0, 0 };
-            sceneObject.start_url = PipelineSettings.GLTFName + ".glb";
+            sceneObject.start_url = "./" + PipelineSettings.GLTFName + ".glb";
             scene.objects.Add(sceneObject);
             UnityEngine.Debug.Log("realtimeLights" + realtimeLights);
             foreach (var light in realtimeLights)

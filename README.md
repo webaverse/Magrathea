@@ -24,7 +24,7 @@ Export any Unity scene as a GLB with menu item Magrathea->Export Scene. This wil
 
 **Export Components**: Options for exporting specific component types
 
-**Export**: Begins an export. Note that if you have a gameobject selected in editor, then only the selection is exported.
+**Export**: Begins an export. Note that if you have a game object selected in editor, then only the selection is exported.
 
 ### Supported Components
 **Lights**: point and direction light are currently supported.
@@ -33,9 +33,9 @@ Export any Unity scene as a GLB with menu item Magrathea->Export Scene. This wil
 
 **Lightmaps**: Lightmaps are supported in two different export options:
 
-  ***BAKE_COMBINED***: lightmaps are automatically combined with the diffuse channel and reprojected onto the mesh's uv0, then exported as an unlit material. Note that this will cause issues with instanced geometry.
+***BAKE_COMBINED***: lightmaps are automatically combined with the diffuse channel and reprojected onto the mesh's uv0, then exported as an unlit material. Note that this will cause issues with instanced geometry.
 
-  ***BAKE_SEPARATE***: lightmaps are exported as-is and loaded into the lightmap in the standard mesh material. Mesh uv2s are adjusted to apply lightmap scale and offset. 
+***BAKE_SEPARATE***: lightmaps are exported as-is and loaded into the lightmap in the standard mesh material. Mesh uv2s are adjusted to apply lightmap scale and offset. 
 
 **Colliders**: box and mesh colliders are automatically configured and exported in Magrathea compatible format.
 
@@ -100,4 +100,3 @@ In general, exceptions thrown during the SeinJS export will result in all materi
 
 ### No Default Materials Allowed
 Every material in the scene must be a project asset that resides somewhere within the Assets folder. Materials from unity's default asset registry will cause the exporter to fail.
-
