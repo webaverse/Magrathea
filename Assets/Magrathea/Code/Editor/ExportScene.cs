@@ -1,4 +1,4 @@
-verseusing System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
@@ -1287,7 +1287,7 @@ namespace Magrathea
         {
             String metaverseFile = "{\"name\": \"" + PipelineSettings.GLTFName + "\", \"start_url\": \"" + PipelineSettings.GLTFName + ".scn\" }";
             // write the metaverse file to the project folder
-            File.WriteAllText(Path.Combine(PipelineSettings.ConversionFolder + "/Webaverse", PipelineSettings.GLTFName, ".metaversefile"), metaversefile);
+            File.WriteAllText(Path.Combine(PipelineSettings.ConversionFolder + "/Webaverse", PipelineSettings.GLTFName, ".metaversefile"), metaverseFile);
         }
 
         private void CreateSceneFile(string GLBName)
