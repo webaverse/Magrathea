@@ -21,7 +21,7 @@ namespace SeinJS
         static Dictionary<Material, string> backups;
         static Dictionary<Material, Material> gltfLinks;
 
-        [MenuItem("Assets/Materials to SeinPBR", priority = 0)]
+        [MenuItem("Assets/Materials/Materials to SeinPBR", priority = 0)]
         public static void AssetsToSeinPBR()
         {
             backups = new Dictionary<Material, string>();
@@ -132,7 +132,7 @@ namespace SeinJS
             return result.ToArray();
         }
 
-        [MenuItem("SeinJS/Materials to SeinPBR", priority = 4)]
+        [MenuItem("Assets/Materials/Materials to SeinPBR", priority = 4)]
         public static void AllToSeinPBR()
         {
             backups = new Dictionary<Material, string>();
@@ -189,7 +189,7 @@ namespace SeinJS
             ConvertMaterial(material, renderer);
         }
 
-        [MenuItem("SeinJS/Restore Materials")]
+        [MenuItem("Assets/Materials/Restore Materials")]
         public static void RestoreMaterials()
         {
             foreach(var material in backups.Keys)

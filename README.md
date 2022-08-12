@@ -96,7 +96,7 @@ This will export the collider information in an XRE supported format. Meshopt co
 ## Known Issues
 
 ### Materials Black After Error During Export
-In general, exceptions thrown during the SeinJS export will result in all materials in the scene being black. Quickly fix this after it occurs by selecting menu item SeinJS->Restore Materials.
+In general, exceptions thrown during the SeinJS export will result in all materials in the scene being black. Quickly fix this after it occurs by selecting menu item Assets->Materials->Restore Materials.
 
 ### No Default Materials Allowed
 Every material in the scene must be a project asset that resides somewhere within the Assets folder. Materials from unity's default asset registry will cause the exporter to fail.

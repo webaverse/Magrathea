@@ -101,17 +101,6 @@ namespace Magrathea
             {
 
                 case State.INITIAL:
-                    baseSettings = EditorGUILayout.Foldout(baseSettings, "Base Settings");
-                    if (baseSettings)
-                    {
-                        PipelineSettings.GLTFName = EditorGUILayout.TextField("Name:", PipelineSettings.GLTFName);
-
-                        if (GUILayout.Button("Set Output Directory"))
-                        {
-                            PipelineSettings.XREProjectFolder = EditorUtility.SaveFolderPanel("Output Directory", PipelineSettings.XREProjectFolder, "");
-                        }
-                        GUILayout.Space(8);
-                        GUILayout.Label("Export Components:");
                         PipelineSettings.ExportLights = EditorGUILayout.Toggle("Lights", PipelineSettings.ExportLights);
                         PipelineSettings.ExportColliders = EditorGUILayout.Toggle("Colliders", PipelineSettings.ExportColliders);
                         PipelineSettings.ExportSkybox = EditorGUILayout.Toggle("Skybox", PipelineSettings.ExportSkybox);
@@ -119,9 +108,14 @@ namespace Magrathea
                         GUILayout.Space(8);
                         PipelineSettings.meshMode = (MeshExportMode)EditorGUILayout.EnumPopup("Mesh Export Options", PipelineSettings.meshMode);
                         PipelineSettings.lightmapMode = (LightmapMode)EditorGUILayout.EnumPopup("Lightmap Mode", PipelineSettings.lightmapMode);
+                        // Add a label to indication that the BAKE_SEPARATE lightmap mode will export MOZ_lightmap extension
+                        if (PipelineSettings.lightmapMode != LightmapMode.BAKE_SEPARATE)
+                        {
+                            EditorGUILayout.HelpBox("The MOZ_lightmap extension is only supported with BAKE_SEPARATE", MessageType.Info);
+                        }
                         GUILayout.Space(8);
                         PipelineSettings.CombinedTextureResolution = EditorGUILayout.IntField("Max Texture Resolution", PipelineSettings.CombinedTextureResolution);
-                    }
+                    
                     
                     GUILayout.Space(16);
 
@@ -234,6 +228,16 @@ namespace Magrathea
                         GUILayout.EndVertical();
                     }
                     GUILayout.Space(8);
+                    // Create a Name TextField with a default value of "scene"
+                    PipelineSettings.GLTFName = EditorGUILayout.TextField("Name:", String.IsNullOrEmpty(PipelineSettings.GLTFName) ? "scene" : PipelineSettings.GLTFName, GUILayout.ExpandWidth(true));
+                    
+
+                    if (GUILayout.Button("Set Output Directory"))
+                    {
+                        PipelineSettings.XREProjectFolder = EditorUtility.SaveFolderPanel("Output Directory", PipelineSettings.XREProjectFolder, "");
+                    }
+                    GUILayout.Space(8);
+
                     if (PipelineSettings.XREProjectFolder != null)
                     {
                         doDebug = EditorGUILayout.Toggle("Debug Execution", doDebug);
@@ -243,6 +247,8 @@ namespace Magrathea
                             state = State.PRE_EXPORT;
                             Export(false);
                         }
+                    } else {
+                        EditorGUILayout.HelpBox("Please select an output directory", MessageType.Warning);
                     }
                     break;
 
