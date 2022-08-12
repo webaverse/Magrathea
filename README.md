@@ -1,12 +1,6 @@
 # Magrathea
 
-Export pipeline for Unity3D to the Metaverse
-
-Uses open source code from the following projects
-- [SeinJS](https://github.com/hiloteam)
-- [Webaverse](https://github.com/webaverse)
-- [Atlas Engine](https://github.com/atlasfoundation/atlasengine)
-- [XREngine](https://github.com/xrfoundation/xrengine)
+Export pipeline for Unity3D to Webaverse
 
 # System Requirements
 Unity >2020
