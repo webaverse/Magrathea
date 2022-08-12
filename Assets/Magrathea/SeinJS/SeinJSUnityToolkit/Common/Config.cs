@@ -127,10 +127,6 @@ namespace SeinJS
             {
                 Save();
             }
-
-            header = new Texture2D(1, 1);
-			header.LoadImage(File.ReadAllBytes(Path.Combine(AppDataPath, "./Magrathea/SeinJS/SeinJSUnityToolkit/logo.jpg")));
-			header.Apply();
 		}
 
 		public static void Save()
